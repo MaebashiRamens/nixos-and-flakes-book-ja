@@ -1,122 +1,116 @@
-# Introduction to Flakes
+# Flakes 入門
 
-The flakes experimental feature is a major development for Nix, it introduces a policy for
-managing dependencies between Nix expressions, it improves reproducibility, composability
-and usability in the Nix ecosystem. Although it's still an experimental feature, flakes
-have been widely used by the Nix community.[^1]
+flakes の実験的な機能は Nix における大きな進展です。flakes は Nix 式の間の依存関係を管理す
+るための方針を導入し、再現性、構成可能性、使いやすさを向上させることができます。flakes は
+まだ、実験的な機能ですが Nix コミュニティで広く使われています。[^1]
 
-Flakes is one of the most significant changes the nix project has ever seen.[^2]
+Flakes は nix プロジェクト始まって以来最も大きな変化の1つです。[^2]
 
-In simple terms, if you've worked with some JavaScript/Go/Rust/Python, you should be
-familiar with files like `package.json`/`go.mod`/`Cargo.toml`/`pyproject.toml`. In these
-programming languages, these files are used to describe the dependencies between software
-packages and how to build projects.
+簡単に言うと、もし JavaScript/Go/Rust/Python などの言語の経験があれば
+`package.json`/`go.mod`/`Cargo.toml`/`pyproject.toml` のようなファイルに親しみがあるでしょ
+う。このようなプログラミング言語では、これらのファイルにソフトウェアパッケージ間の依存関係
+とプロジェクトのビルドの仕方が記述されています。
 
-Similarly, the package managers in these programming languages also use files like
-`package-lock.json`/`go.sum`/`Cargo.lock`/`poetry.lock` to lock the versions of
-dependencies, ensuring the reproducibility of projects.
+同様に、このような言語のパッケージマネージャは依存関係のバージョンのロックをし、プロジェク
+トの再現性を担保するために `package-lock.json`/`go.sum`/`Cargo.lock`/`poetry.lock` のよう
+なファイルを利用します。
 
-Flakes borrow ideas from these package managers to enhance the reproducibility,
-composability, and usability of the Nix ecosystem.
+Flakes は Nix のエコシステムの再現性、構成可能性、使いやすさを強化するためにこのようなパッ
+ケージマネージャから着想を得ました。
 
-Flakes introduce `flake.nix`, similar to `package.json`, to describe the dependencies
-between Nix packages and how to build projects. Additionally, it provides `flake.lock`,
-akin to `package-lock.json`, to lock the versions of dependencies, ensuring project
-reproducibility.
+Flakes では flake.nix を導入することで、Nix パッケージ間の依存関係やプロジェクトのビルド方
+法を記述しています (`package.json` のようなものです) 。さらに、flake.lock を用いて依存する
+バージョンをロックし、プロジェクトの再現性を担保しています (`package-lock.json` のようなも
+のです) 。
 
-On the other hand, Flakes experimental features did not break Nix's original design at the
-user level. The two new files `flake.nix`/`flake.lock` introduced by Flakes are just a
-wrapper for other Nix configurations. In the following chapters, we will see that Flakes
-features provide a new and more convenient way to manage the dependencies between Nix
-expressions based on Nix's original design.
+とはいえ、Flakes の実験的な機能は Nix 本来の設計をユーザレベルで壊すものではありません。
+Flakes が導入する2つのファイル `flake.nix`/`flake.lock` は、他の Nix の設定の単なるラッ
+パーに過ぎません。以降の章では、Flakes によって、新しくてより便利な方法で、Nix 式間の依存
+関係を Nix 本来の設計に基づいて管理できるようになることを見ていきます。
 
-## A Word of Caution about Flakes <Badge type="danger" text="caution" />
+## Flakes における注意事項 <Badge type="danger" text="caution" />
 
-The benefits of Flakes are evident, and the entire NixOS community has embraced it
-wholeheartedly. Currently, more than half of the users utilize Flakes[^3], providing
-assurance that Flakes will not be deprecated.
+Flakes の利点は明白であり、NixOS コミュニティ全体で心から受け入れてきました。現在では、半
+分以上のユーザが Flakes を活用していて[^3]、Flakes はこれからも活用されていくでしょう。
 
-:warning: However, it's important to note that **Flakes is still an experimental
-feature**. Some issues persist, and there is a possibility of introducing breaking changes
-during the stabilization process. The extent of these breaking changes remains uncertain.
+:warning: しかし、**Flakes が未だに実験的な機能** であることは覚えておくべきです。Flakesに
+はいくつか問題もあり、安定化の最中に破壊的変更が行われる可能性もあります。このような破壊的
+変更の程度は不確かなままです。
 
-Overall, I strongly recommend everyone to use Flakes, especially since this book revolves
-around NixOS and Flakes. However, it's crucial to be prepared for potential problems that
-may arise due to forthcoming breaking changes.
+特にこの本は NixOS と Flakes を中心として構成されていることもあり、総合的に、私は Flakes
+を利用することを強く推奨します。しかし、今後の破壊的変更によって起こりうる潜在的な問題へ備
+えることも重要です。
 
-## When Will Flakes Be Stabilized?
+## いつ Flakes は安定するの?
 
-I delved into some details regarding Flakes:
+Flakes の詳細についていくらか掘り下げました。
 
 - [[RFC 0136] A Plan to Stabilize Flakes and the New CLI Incrementally](https://github.com/NixOS/rfcs/pull/136):
-  A plan to incrementally stabilize Flakes and the new CLI, merged.
-- [CLI stabilization effort](https://github.com/NixOS/nix/issues/7701): An issue tracking
-  the progress of the New CLI stabilization effort.
+  Flakes と新しい CLI の段階的な安定化の計画について(マージ済)
+- [CLI stabilization effort](https://github.com/NixOS/nix/issues/7701): 新しい CLI の安定
+  化の進捗をトラックする Issue
 - [Why Are Flakes Still Experimental? - NixOS Discourse](https://discourse.nixos.org/t/why-are-flakes-still-experimental/29317):
-  A post discussing why Flakes are still considered experimental.
+  Flakes が未だに実験段階と捉えられている理由についての議論が行われている投稿
 - [Flakes Are Such an Obviously Good Thing - Graham Christensen](https://grahamc.com/blog/flakes-are-an-obviously-good-thing/):
-  An article emphasizing the advantages of Flakes while suggesting areas for improvement
-  in its design and development process.
+  Flakes の設計と開発のプロセスにおける改善できる点を指摘しつつ Flakes の利点を強調してい
+  る記事
 - [ teaching Nix 3 CLI and Flakes #281 - nix.dev](https://github.com/NixOS/nix.dev/issues/281):
-  An issue about "Teaching Nix 3 CLI and Flakes" in nix.dev, and the conclusion is that we
-  should not promote unstable features in nix.dev.
+  nix.dev において Nix 3.0 の CLI と Flakes を扱うべきかという Issue で、nix.dev において
+  は、不安定な機能について積極的に扱うべきではないという結論になりました。
 - [Draft: 1-year Roadmap - NixOS Foundation](https://nixos-foundation.notion.site/1-year-roadmap-0dc5c2ec265a477ea65c549cd5e568a9):
-  A roadmap provided by the NixOS Foundation, which includes plans regarding the
-  stabilization of Flakes.
+  NixOS Foundation が提供しているロードマップで、Flakes の安定化に関する計画について言及し
+  ています。
 
-After reviewing these resources, it seems that Flakes may be(or may not...) stabilized
-within two years, possibly accompanied by some breaking changes.
+これらの情報から、Flakes はいくらかの破壊的変更の可能性はありますが、ここ2年以内には安定す
+るのではないかと思われます。
 
-## The New CLI and the Classic CLI
+## 新しい CLI と 従来の CLI
 
-Nix introduced two experimental features, `nix-command` and `flakes`, in the year 2020.
-These features bring forth a new command-line interface (referred to as the New CLI), a
-standardized Nix package structure definition (known as the Flakes feature), and features
-like `flake.lock`, similar to version lock files in cargo/npm. Despite being experimental
-as of February 1, 2024, these features have gained widespread adoption within the Nix
-community due to their significant enhancement of Nix capabilities.
+Nix は 2020年に `nix-command` と `flakes` の2つの実験的な機能を導入しました。これによっ
+て、新しい command-line インターフェース (新しい CLI)、標準化された Nix パッケージの構造定
+義 (Flakes の機能)、cargo/npm のバージョンをロックするファイルと同様の `flake.lock` のよう
+な機能といったものがもたらされています。これらの機能は Nix の潜在能力を大きく引き出すこと
+ができ、2024年2月1日時点で実験段階ですが Nix コミュニティの間で広く受け入れられています。
 
-The current Nix New CLI (the `nix-command` experimental feature) is tightly coupled with
-the Flakes experimental feature. While there are ongoing efforts to explicitly separate
-them, using Flakes essentially requires the use of the New CLI. In this book, serving as a
-beginner's guide to NixOS and Flakes, it is necessary to introduce the differences between
-the New CLI, which Flakes relies on, and the old CLI.
+現在の Nix の新しい CLI (`nix-command` の実験的な機能) は Flakes と強く結びついています。
+この CLI と Flakes を明示的に切り離そうとする運動もありますが、Flakes を使う際にはどうして
+も新しい CLI を使う必要があります。この本は、NixOS と Flakes の入門者向けのガイドであるの
+で、Flakes が依存している新しい CLI と従来の CLI との違いについて解説する必要があります。
 
-Here, we list the old Nix CLI and related concepts that are no longer needed when using
-the New CLI and Flakes (`nix-command` and `flakes`). When researching, you can replace
-them with the corresponding New CLI commands (except for `nix-collect-garbage`, as there
-is currently no alternative for this command):
+ここでは、新しい CLI (`nix-command`) と Flakes を使う上で、もはや必要なくなった従来の CLI
+について羅列しています。これらのコマンドは、対応する新しい CLI に置き換えることができます
+(しかし、`nix-collect-garbage` については現在代用のコマンドはありません):
 
-1. `nix-channel`: `nix-channel` manages software package versions through
-   stable/unstable/test channels, similar to other package management tools such as
-   apt/yum/pacman.
-   1. In Flakes, The functionality of `nix-channel` is entirely replaced by the `inputs`
-      section in `flake.nix`.
-2. `nix-env`: `nix-env` is a core command-line tool for classic Nix used to manage
-   software packages in the user environment.
-   1. It installs packages from the data sources added by `nix-channel`, causing the
-      installed package's version to be influenced by the channel. Packages installed with
-      `nix-env` are not automatically recorded in Nix's declarative configuration and are
-      completely independent of its control, making them challenging to reproduce on other
-      machines. Therefore, it is not recommended to use this command directly.
-   2. The corresponding command in the New CLI is `nix profile`. Personally, I don't
-      recommend it for beginners.
-3. `nix-shell`: `nix-shell` creates a temporary shell environment, which is useful for
-   development and testing.
-   1. New CLI: This tool is divided into three sub-commands: `nix develop`, `nix shell`,
-      and `nix run`. We will discuss these three commands in detail in the
-      "[Development](../development/intro.md)" chapter.
-4. `nix-build`: `nix-build` builds Nix packages and places the build results in
-   `/nix/store`, but it does not record them in Nix's declarative configuration.
-   1. New CLI: `nix-build` is replaced by `nix build`.
-5. `nix-collect-garbage`: Garbage collection command used to clean up unused Store Objects
-   in `/nix/store`.
-   1. There is a similar command in the New CLI, `nix store gc --debug`, but it does not
-      clean the profile generations, so there is currently no alternative for this
-      command.
-6. And other less commonly used commands are not listed here.
-   1. You can refer to the detailed command comparison list in
-      [Try to explain nix commands](https://qiita.com/Sumi-Sumi/items/6de9ee7aab10bc0dbead?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en).
+1. `nix-channel`: apt/yum/pacman のような他のパッケージ管理ツールのように `nix-channel` は
+   ソフトウェアパッケージのバージョンを stable/unstable/test チャンネルを用いて管理するこ
+   とができます。
+   1. Flakes では、`nix-channel` の機能は `flake.nix` の `inputs` セクションで完全に置き換
+      えることができます。
+2. `nix-env`: `nix-env` は従来の Nix のユーザ環境のソフトウェアパッケージを管理するための
+   CLI ツールです。
+   1. `nix-channel` によって加えたデータソースからのパッケージのインストールを行います。こ
+      の際、パッケージのバージョンはこのチャンネルに影響を受けます。 `nix-env` を用いたイ
+      ンストールでは Nix の宣言的な設定に自動的に記録されず、Nix の設定の制御下に置かれな
+      いので、他のコンピュータへの複製は大変になります。このことから、このコマンドを直接使
+      用することはおすすめしません。
+   2. これに対応する新しい CLI のコマンドは `nix profile` です。ですが、個人的には入門者に
+      はおすすめしません。
+3. `nix-shell`: `nix-shell` は一時的なシェル環境を作り出すことだでき、開発やテストに便利で
+   す。
+   1. 新しい CLI では、3つのサブコマンド: `nix develop`, `nix shell`, `nix run` に分けられ
+      ます。これらのコマンドについては、"[開発環境](../development/intro.md)" の章で議論し
+      ていきます。
+4. `nix-build`: `nix-build` は Nix パッケージをビルドし、ビルド成果物を `/nix/store` に格
+   納します。しかし、このビルド成果物は Nix の宣言的な設定には記録されません。
+   1. 新しい CLI では `nix-build` は `nix build` で置き換えられます。
+5. `nix-collect-garbage`: ガベージコレクションコマンドは、`/nix/store` 内の使われていない
+   ストアオブジェクトを一掃します。
+   1. 新しい CLI にも `nix store gc --debug` という似たようなコマンドが存在しますが、この
+      コマンドは Nix のプロファイル世代を削除しないので完全な代用のコマンドは現在のところ
+      ありません。
+6. 他のマイナーなコマンドについてはここでは扱いません。
+   1. [nixのコマンドを解説してみる](https://qiita.com/Sumi-Sumi/items/6de9ee7aab10bc0dbead?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en)
+      で詳細なコマンドの比較をすることができます。
 
 [^1]: [Flakes - NixOS Wiki](https://wiki.nixos.org/wiki/Flakes)
 [^2]:
