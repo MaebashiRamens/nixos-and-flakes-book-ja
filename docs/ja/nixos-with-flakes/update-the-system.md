@@ -10,10 +10,10 @@ nix flake update
 # または、home-managerのような特定のインプットのみの置き換え
 nix flake update home-manager
 
-# アップデートの適応
+# アップデートの適用
 sudo nixos-rebuild switch --flake .
 
-# または、flake.lockのアップデートと適応を一つのコマンドで行うこともできます。（一つ前に"nix flake update"を実行するのと同じ）
+# または、flake.lockのアップデートと適用を一つのコマンドで行うこともできます。（一つ前に"nix flake update"を実行するのと同じ）
 sudo nixos-rebuild switch --recreate-lock-file --flake .
 ```
 
