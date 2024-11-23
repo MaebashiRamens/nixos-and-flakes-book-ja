@@ -1,4 +1,4 @@
-# Downgrading or Upgrading Packages
+# パッケージをアップ(ダウン)グレードする
 
 Flakesを使用していると、バグを特定したり互換性の問題に対処したりするために
 特定のパッケージをアップ(ダウン)グレードしたいことがあります。
@@ -101,9 +101,12 @@ submodule. Here's an example of a Home Manager submodule:
 }
 ```
 
-## Pinning a package version with an overlay
+## Overlaysを用いてパッケージバージョンを固定する
 
-The above approach is perfect for application packages, but sometimes you need to replace libraries used by those packages. This is where [Overlays](../nixpkgs/overlays.md) shine! Overlays can edit or replace any attribute of a package, but for now we'll just pin a package to a different nixpkgs version. The main disadvantage of editing a dependency with an overlay is that your Nix installation will recompile all installed packages that depend on it, but your situation may require it for specific bug fixes.
+上記の方法はアプリケーションのパッケージには最適ですが、ときにはそれらのアプリケーションが用いるライブラリのバージョンを固定したいということもあるでしょう。
+そんなときには[Overlays](../nixpkgs/overlays.md)が威力を発揮します。
+Overlaysを用いると任意のパッケージの属性を変更したり書き換えたりできますが、今回は特定のパッケージのバージョンを書き換えるだけとします。
+この方法の最大のデメリットはNixがそれに依存するパッケージを全てリコンパイルしてしまうことですが、それがむしろ特定のバグの解決につながることもあるでしょう。
 
 ```nix
 # overlays/mesa.nix
@@ -119,11 +122,10 @@ The above approach is perfect for application packages, but sometimes you need t
 }
 ```
 
-## Applying the new configuration
+## 新しい設定を適用する
 
-By adjusting the configuration as shown above, you can deploy it using
-`sudo nixos-rebuild switch`. This will downgrade your Firefox/Chrome/VSCode versions to
-the ones corresponding to `nixpkgs-stable` or `nixpkgs-fd40cef8d`.
+以下に示されているように設定を調整すると、`sudo nixos-rebuild switch`を用いて新しいシステムをデプロイできます。
+こうすることで、Firefox/Chrome/VSCodeのバージョンを`nixpkgs-stable`から`nixpkgs-fd40cef8d`にダウングレードします。
 
 > According to
 > [1000 instances of nixpkgs](https://discourse.nixos.org/t/1000-instances-of-nixpkgs/17347),
