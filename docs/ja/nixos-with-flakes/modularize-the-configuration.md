@@ -1,9 +1,8 @@
-# Modularize Your NixOS Configuration
+# NixOSの設定をモジュール化する
 
-At this point, the skeleton of the entire system is configured. The current configuration
-structure in `/etc/nixos` should be as follows:
+この時点で既にシステムの構築が完了されているとします。現在の`/etc/nixos`は次のようになっているはずです:
 
-```
+```txt
 $ tree
 .
 ├── flake.lock
@@ -12,47 +11,38 @@ $ tree
 └── configuration.nix
 ```
 
-The functions of these four files are:
+これら4つのファイルの機能は次のとおりです:
 
-- `flake.lock`: An automatically generated version-lock file that records all input
-  sources, hash values, and version numbers of the entire flake to ensure reproducibility.
+- `flake.lock`: 自動で生成されたバージョンロック用のファイルです。Flakes全体の全てのinput source、ハッシュ値、バージョン番号が再現性のために記録されています。
 - `flake.nix`: The entry file that will be recognized and deployed when executing
   `sudo nixos-rebuild switch`. See [Flakes - NixOS Wiki](https://wiki.nixos.org/wiki/Flakes)
   for all options of flake.nix.
-- `configuration.nix`: Imported as a Nix module in flake.nix, all system-level
-  configuration is currently written here. See
+- `configuration.nix`: flake.nixでNix moduleとしてインポートされ、全てのシステム設定がここに記述されています。
+  このファイルの全てのオプションを確認するには
   [Configuration - NixOS Manual](https://nixos.org/manual/nixos/unstable/index.html#ch-configuration)
-  for all options of configuration.nix.
-- `home.nix`: Imported by Home-Manager as the configuration of the user `ryan` in
-  flake.nix, containing all of `ryan`'s configuration and managing `ryan`'s home folder.
-  See
+  を参照してください。
+- `home.nix`: fleke.nixで`ryan`の設定としてHome-Managerからインポートされ、全ての`ryan`の設定と`ryan`のホームディレクトリが含まれています。
+  このファイルの全てのオプションを確認するには
   [Appendix A. Configuration Options - Home-Manager](https://nix-community.github.io/home-manager/options.xhtml)
-  for all options of home.nix.
+  を参照してください。
 
-By modifying these files, you can declaratively change the system and home directory
-status.
+これらのファイルを変更することで、システムやホームディレクトリの状態を宣言的に変更できます。
 
-However, as the configuration grows, relying solely on `configuration.nix` and `home.nix`
-can lead to bloated and difficult-to-maintain files. A better solution is to use the Nix
-module system to split the configuration into multiple Nix modules and write them in a
-classified manner.
+しかし、`configuration.nix`や`home.nix`のみに全てを保存していると設定が肥大化したときに保守が困難になります。
+より良い方法はNix moduleシステムを用いて設定を複数のNix moduleに分割し、カテゴリごとに分類して記述することです。
 
-The Nix module system provides a parameter, `imports`, which accepts a list of `.nix`
-files and merges all the configuration defined in these files into the current Nix module.
-Note that `imports` will not simply overwrite duplicate configuration but handle it more
-reasonably. For example, if `program.packages = [...]` is defined in multiple modules,
-then `imports` will merge all `program.packages` defined in all Nix modules into one list.
-Attribute sets can also be merged correctly. The specific behavior can be explored by
-yourself.
+Nixモジュールシステムには、現在のNix moduleに複数の`.nix`ファイルをマージする`imports`というパラメータがあります。
+`imports`は単に重複している設定を上書きするだけではなく、もっと賢くいい感じにしてくれます。
+例えば、`program.packages = [...]`と複数のモジュールで定義されていた場合、これらの全てのリストをマージします。
+Attribute setsも同様に正確にマージされます。この挙動を自身の目で確認してみましょう。
 
 > I only found a description of `imports` in
 > [Nixpkgs-Unstable Official Manual - evalModules Parameters](https://nixos.org/manual/nixpkgs/unstable/#module-system-lib-evalModules-parameters):
 > `A list of modules. These are merged together to form the final configuration.` It's a
 > bit ambiguous...
 
-With the help of `imports`, we can split `home.nix` and `configuration.nix` into multiple
-Nix modules defined in different `.nix` files. Lets look at an example module
-`packages.nix`:
+`imports`が賢いおかげで、`home.nix`と`configuration.nix`を複数の`.nix`ファイルで構成されるNix modulesに
+分割することができます。以下に`packages.nix`のmodulesの構成例を示します:
 
 ```nix
 {
@@ -89,14 +79,12 @@ Both import statements above are equivalent in the parameters they receive:
   function in `packages.nix` to the loaded function in `special-fonts-2.nix` which results
   in `import ./special-fonts-2.nix {config = config; pkgs = pkgs}`.
 
-Here is a nice starter example of modularizing the configuration, Highly recommended:
+以下のリポジトリは、モジュール化を開始する際に非常に有用なテンプレートです:
 
 - [Misterio77/nix-starter-configs](https://github.com/Misterio77/nix-starter-configs)
 
-A more complicated example,
 [ryan4yin/nix-config/i3-kickstarter](https://github.com/ryan4yin/nix-config/tree/i3-kickstarter)
-is the configuration of my previous NixOS system with the i3 window manager. Its structure
-is as follows:
+はi3ウィンドウマネージャを用いた以前の私のNixOSの設定です。構造は以下のようになっています:
 
 ```shell
 ├── flake.lock
@@ -151,9 +139,8 @@ is as follows:
 └── wallpaper.jpg    # wallpaper
 ```
 
-There is no need to follow the above structure, you can organize your configuration in any
-way you like. The key is to use `imports` to import all the submodules into the main
-module.
+上記の構造に必ず当てはめる必要はありません。自分の好きなように構成できます。
+重要なのは、`imports`を用いて全てのsub moduleをmain moduleにインポートすることです。
 
 ## `lib.mkOverride`, `lib.mkDefault`, and `lib.mkForce`
 
@@ -359,7 +346,7 @@ order of definition.
 > For a deeper introduction to the module system, see
 > [Module System & Custom Options](../other-usage-of-flakes/module-system.md).
 
-## References
+## 参考文献
 
 - [Nix modules: Improving Nix's discoverability and usability](https://cfp.nixcon.org/nixcon2020/talk/K89WJY/)
 - [Module System - Nixpkgs](https://github.com/NixOS/nixpkgs/blob/nixos-23.11/doc/module-system/module-system.chapter.md)
