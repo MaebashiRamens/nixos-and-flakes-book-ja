@@ -79,8 +79,8 @@ Flakes. Here's an example of the content:
   description = "A simple NixOS flake";
 
   inputs = {
-    # NixOS official package source, using the nixos-23.11 branch here
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    # NixOS official package source, using the nixos-24.11 branch here
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
   };
 
   outputs = { self, nixpkgs, ... }@inputs: {
@@ -125,12 +125,11 @@ Currently, our flake includes these files:
 Up to this point, we have merely added a very simple configuration file,
 `/etc/nixos/flake.nix`, which has merely been a thin wrapper around
 `/etc/nixos/configuration.nix`, offering no new functionality and introducing no
-disruptive changes. 
+disruptive changes.
 
 In the content of the book that follows, we will learn about the structure and
 functionality of `flake.nix` and gradually see the benefits that such a wrapper can
 bring.
-
 
 > Note: The configuration management method described in this book is NOT "Everything in a
 > single file". It is recommended to categorize configuration content into different nix
@@ -146,12 +145,11 @@ bring.
 
 [nix flake - Nix Manual]:
   https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake#flake-inputs
-[nixpkgs/flake.nix]: https://github.com/NixOS/nixpkgs/tree/nixos-23.11/flake.nix
 [nixpkgs/nixos/lib/eval-config.nix]:
-  https://github.com/NixOS/nixpkgs/tree/nixos-23.11/nixos/lib/eval-config.nix
+  https://github.com/NixOS/nixpkgs/tree/nixos-24.11/nixos/lib/eval-config.nix
 [Module System - Nixpkgs]:
-  https://github.com/NixOS/nixpkgs/blob/23.11/doc/module-system/module-system.chapter.md
-[nixpkgs/nixos-23.11/lib/modules.nix - _module.args]:
-  https://github.com/NixOS/nixpkgs/blob/nixos-23.11/lib/modules.nix#L122-L184
-[nixpkgs/nixos-23.11/nixos/doc/manual/development/option-types.section.md#L237-L244]:
-  https://github.com/NixOS/nixpkgs/blob/nixos-23.11/nixos/doc/manual/development/option-types.section.md?plain=1#L237-L244
+  https://github.com/NixOS/nixpkgs/blob/24.11/doc/module-system/module-system.chapter.md
+[nixpkgs/nixos-24.11/lib/modules.nix - _module.args]:
+  https://github.com/NixOS/nixpkgs/blob/nixos-24.11/lib/modules.nix#L122-L184
+[nixpkgs/nixos-24.11/nixos/doc/manual/development/option-types.section.md#L237-L244]:
+  https://github.com/NixOS/nixpkgs/blob/nixos-24.11/nixos/doc/manual/development/option-types.section.md?plain=1#L237-L244

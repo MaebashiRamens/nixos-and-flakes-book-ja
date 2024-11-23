@@ -9,7 +9,7 @@ An example of kernel development with `flake.nix`.
   description = "NixOS running on LicheePi 4A";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11-small";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11-small";
 
     # custom kernel's source
     thead-kernel = {
@@ -117,4 +117,4 @@ and use `make menuconfig` to configure the kernel.
 ## References
 
 - [Linux kernel - NixOS Wiki](https://wiki.nixos.org/wiki/Linux_kernel)
-- https://github.com/jordanisaacs/kernel-module-flake
+- <https://github.com/jordanisaacs/kernel-module-flake>
