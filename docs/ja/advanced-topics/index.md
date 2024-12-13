@@ -5,7 +5,7 @@
 ## コミュニティ
 
 - [Nix Official - Community](https://nixos.org/community/): Nix コミュニティやフォーラム、リアルタイムのチャット、meetups、RFCの情報が公開されています。
-- [Nix Channel Status](https://status.nixos.org/): The build status of each Nix channel.
+- [Nix Channel Status](https://status.nixos.org/): 各Nix channelのビルドステータス。
 - [nix-community/NUR](https://github.com/nix-community/NUR): Nixpkgsには非常に多くのパッケージが含まれていますが、レビューの速度やライセンスの問題等によって含まれていないパッケージもあります。NURは誰でも独自に作成して他の人が使えるようにパッケージを追加できる、分散型のNixパッケージリポジトリです。Nixpkgsに無いパッケージを使いたいときはNURで探すことができます。また、NURのREADMEに従えば独自のNixパッケージを他の人と共有することもできます。
 
 ## ドキュメントとビデオ

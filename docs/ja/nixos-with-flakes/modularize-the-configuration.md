@@ -41,7 +41,7 @@ Attribute setsも同様に正確にマージされます。この挙動を自身
 > `A list of modules. These are merged together to form the final configuration.` It's a
 > bit ambiguous...
 
-`imports`が賢いおかげで、`home.nix`と`configuration.nix`を複数の`.nix`ファイルで構成されるNix modulesに
+`imports`は非常に賢いので、`home.nix`と`configuration.nix`を複数の`.nix`ファイルで構成されるNix modulesに
 分割することができます。以下に`packages.nix`のmodulesの構成例を示します:
 
 ```nix
@@ -59,8 +59,8 @@ Attribute setsも同様に正確にマージされます。この挙動を自身
 }
 ```
 
-This module loads two other modules in the imports section, namely `special-fonts-1.nix`
-and `special-fonts-2.nix`. Both files are modules themselves and look similar to this.
+このモジュールは`special-fonts-1.nix`と`special-fonts-2.nix`という名前の2つの異なるモジュールを
+importsセクションで読み込みます。これらのファイルは次と非常に似たような構成をしているモジュールです。
 
 ```nix
 { config, pkgs, ...}: {
@@ -144,14 +144,13 @@ Both import statements above are equivalent in the parameters they receive:
 
 ## `lib.mkOverride`, `lib.mkDefault`, and `lib.mkForce`
 
-In Nix, some people use `lib.mkDefault` and `lib.mkForce` to define values. These
-functions are designed to set default values or force values of options.
+一部の人は何かしらの値を定義するのに`lib.mkDefault`と`lib.mkForce`を使っています。
+これらの関数はデフォルト値を設定したり、オプションの値を強制したりするために設計されています。
 
-You can explore the source code of `lib.mkDefault` and `lib.mkForce` by running
-`nix repl -f '<nixpkgs>'` and then entering `:e lib.mkDefault`. To learn more about
-`nix repl`, type `:?` for the help information.
+`nix repl -f '<nixpkgs>'`を実行後、`:e lib.mkDefault`と入力することで対象の関数のソースコードを見ることができます。
+`nix repl`についてさらに詳細を学習するには、`:?`を用いてください。
 
-Here's the source code:
+実際のソースコードは以下になります:
 
 ```nix
   # ......

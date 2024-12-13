@@ -1,7 +1,7 @@
 # Getting Started with Home Manager
 
-As I mentioned earlier, NixOS can only manage system-level configuration. To manage
-user-level configuration in the Home directory, we need to install Home Manager.
+以前にお話した通り、NixOSはシステムレベルの設定しか管理できません。
+Homeディレクトリ内のようなユーザーレベルの構成を行うには、Home Managerを使用する必要があります。
 
 According to the official
 [Home Manager Manual](https://nix-community.github.io/home-manager/index.xhtml), to
