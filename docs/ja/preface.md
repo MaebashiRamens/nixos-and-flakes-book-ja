@@ -54,9 +54,6 @@ NixOS入門者向けのメモを整理した後、それを私のブログ[^1]�
 
 そしてこの多言語対応なオープンソースの本が生まれました。"<NixOS & Flakes Book>"と命名されたこの本は中国語で"NixOS & Flakes 新手指南" ("NixOS & Flakes Beginner's Guide")と命名されました。
 
-<!-- And so, a bilingual open-source book was born, which I named "<NixOS & Flakes Book>" with
-the Chinese title "NixOS & Flakes 新手指南" ("NixOS & Flakes Beginner's Guide"). -->
-
 このオープンソースの本の内容は、私が更にNixOSを使ったり読者と交流を持っていくなかで少しずつ進化していきました。
 読んでくださる方々からのポジティブな感想は、このドキュメントの更新のモチベーションになります。
 何人かの読者からの感想はまさにこの本の「進化」に役立ちました。
@@ -69,14 +66,11 @@ the Chinese title "NixOS & Flakes 新手指南" ("NixOS & Flakes Beginner's Guid
 
 ## この本の特徴
 
-1. NixOSとFlakesに焦点を当て、旧来のNixのアプローチを無視しています
-2. Beginner-friendly, with explanations from the perspective of NixOS newcomers who have
-   some experience with Linux usage and programming.
-3. Step-by-step, progressive learning.
-4. Most of the chapters in this book provide reference links at the end, making it easy
-   for readers to delve deeper into the topics and evaluate the content's credibility.
-5. Coherent content, well-organized, and structured. Readers can either read the book
-   gradually or quickly find the information they need.
+1. NixOSとFlakesに焦点を当て、旧来のNixのアプローチを無視しています。
+2. 初心者に優しく、Linuxやプログラミングをある程度使ったことのあるNixOS初学者の視点から説明しています。
+3. 段階的に進めていく学習方式を採用しています。
+4. 本書のほとんどの章には末尾に参考リンクを記載しており、読者がトピックをより深く掘り下げたり、内容の信頼性を評価しやすくなっています。
+5. 内容に一貫性があり、よく整理された構成になっています。読者は本書を順を追って読み進めることも、必要な情報をすばやく見つけることもできます。
 
 ## 寄付
 
