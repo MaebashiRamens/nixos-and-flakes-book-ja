@@ -17,8 +17,8 @@ The functions of these four files are:
 - `flake.lock`: An automatically generated version-lock file that records all input
   sources, hash values, and version numbers of the entire flake to ensure reproducibility.
 - `flake.nix`: The entry file that will be recognized and deployed when executing
-  `sudo nixos-rebuild switch`. See [Flakes - NixOS Wiki](https://wiki.nixos.org/wiki/Flakes)
-  for all options of flake.nix.
+  `sudo nixos-rebuild switch`. See
+  [Flakes - NixOS Wiki](https://wiki.nixos.org/wiki/Flakes) for all options of flake.nix.
 - `configuration.nix`: Imported as a Nix module in flake.nix, all system-level
   configuration is currently written here. See
   [Configuration - NixOS Manual](https://nixos.org/manual/nixos/unstable/index.html#ch-configuration)
@@ -37,8 +37,16 @@ can lead to bloated and difficult-to-maintain files. A better solution is to use
 module system to split the configuration into multiple Nix modules and write them in a
 classified manner.
 
-The Nix module system provides a parameter, `imports`, which accepts a list of `.nix`
-files and merges all the configuration defined in these files into the current Nix module.
+The Nix language provides an
+[import function](https://nix.dev/tutorials/nix-language.html#import) with a special rule:
+
+> If the parameter of `import` is a folder path, it will return the execution result of
+> the `default.nix` file in that folder.
+
+The Nixpkgs module system provides a similar parameter, `imports`, which accepts a list of
+`.nix` files and **merge** all the configuration defined in these files into the current
+Nix module.
+
 Note that `imports` will not simply overwrite duplicate configuration but handle it more
 reasonably. For example, if `program.packages = [...]` is defined in multiple modules,
 then `imports` will merge all `program.packages` defined in all Nix modules into one list.
@@ -74,7 +82,7 @@ and `special-fonts-2.nix`. Both files are modules themselves and look similar to
 
 ```nix
 { config, pkgs, ...}: {
-    # Configuration stuff ...
+  # Configuration stuff ...
 }
 ```
 
@@ -82,7 +90,7 @@ Both import statements above are equivalent in the parameters they receive:
 
 - Statement `(1)` imports the function in `special-fonts-1.nix` and calls it by passing
   `{config = config; pkgs = pkgs}`. Basically using the return value of the call (another
-  partial configuration [attritbute set]) inside the `imports` list.
+  partial configuration _attribute set_) inside the `imports` list.
 
 - Statement `(2)` defines a path to a module, whose function Nix will load _automatically_
   when assembling the configuration `config`. It will pass all matching arguments from the
@@ -169,13 +177,14 @@ Here's the source code:
 ```nix
   # ......
 
-  mkOverride = priority: content:
-    { _type = "override";
-      inherit priority content;
-    };
+  mkOverride = priority: content: {
+    _type = "override";
+    inherit priority content;
+  };
 
   mkOptionDefault = mkOverride 1500; # priority of option defaults
   mkDefault = mkOverride 1000; # used in config sections of non-user modules to set a default
+  defaultOverridePriority = 100;
   mkImageMediaOverride = mkOverride 60; # image media profiles can be derived by inclusion into host config, hence needing to override host config, but do allow user to mkForce
   mkForce = mkOverride 50;
   mkVMOverride = mkOverride 10; # used by ‘nixos-rebuild build-vm’
@@ -186,7 +195,8 @@ Here's the source code:
 In summary, `lib.mkDefault` is used to set default values of options with a priority of
 1000 internally, and `lib.mkForce` is used to force values of options with a priority of
 50 internally. If you set a value of an option directly, it will be set with a default
-priority of 1000, the same as `lib.mkDefault`.
+priority of 100 (defined by `defaultoverridepriority`), which is higher than
+`lib.mkDefault` so the default value will be overridden.
 
 The lower the `priority` value, the higher the actual priority. As a result, `lib.mkForce`
 has a higher priority than `lib.mkDefault`. If you define multiple values with the same
@@ -273,15 +283,13 @@ shorthand for `lib.mkOrder 1500`.
 To test the usage of `lib.mkBefore` and `lib.mkAfter`, let's create a simple Flake
 project:
 
-```nix{10-38}
+```nix{8-36}
 # flake.nix
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
   outputs = {nixpkgs, ...}: {
     nixosConfigurations = {
       "my-nixos" = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-
         modules = [
           ({lib, ...}: {
             programs.bash.shellInit = lib.mkBefore ''
@@ -325,7 +333,7 @@ strings, single-line strings, and lists. Let's test the results:
 ```bash
 # Example 1: multiline string merging
 › echo $(nix eval .#nixosConfigurations.my-nixos.config.programs.bash.shellInit)
-trace: warning: system.stateVersion is not set, defaulting to 24.11. Read why this matters on https://nixos.org/manual/nixos/stable/options.html#opt-system.stateVersio
+trace: warning: system.stateVersion is not set, defaulting to 25.11. Read why this matters on https://nixos.org/manual/nixos/stable/options.html#opt-system.stateVersio
 n.
 "echo 'insert before default'
 
@@ -362,4 +370,4 @@ order of definition.
 ## References
 
 - [Nix modules: Improving Nix's discoverability and usability](https://cfp.nixcon.org/nixcon2020/talk/K89WJY/)
-- [Module System - Nixpkgs](https://github.com/NixOS/nixpkgs/blob/nixos-24.11/doc/module-system/module-system.chapter.md)
+- [Module System - Nixpkgs](https://github.com/NixOS/nixpkgs/blob/nixos-25.11/doc/module-system/module-system.chapter.md)

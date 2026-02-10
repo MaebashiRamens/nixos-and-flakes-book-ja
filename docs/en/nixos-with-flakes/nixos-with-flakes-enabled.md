@@ -33,7 +33,6 @@ the accompanying new nix command-line tool:
     git
     vim
     wget
-    curl
   ];
   # Set the default editor to vim
   environment.variables.EDITOR = "vim";
@@ -74,19 +73,18 @@ Referencing this template, create the file `/etc/nixos/flake.nix` and write the
 configuration content. All subsequent system modifications will be taken over by Nix
 Flakes. Here's an example of the content:
 
-```nix{16}
+```nix{15}
 {
   description = "A simple NixOS flake";
 
   inputs = {
-    # NixOS official package source, using the nixos-24.11 branch here
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    # NixOS official package source, using the nixos-25.11 branch here
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
   };
 
   outputs = { self, nixpkgs, ... }@inputs: {
     # Please replace my-nixos with your hostname
     nixosConfigurations.my-nixos = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
       modules = [
         # Import the previous configuration.nix we used,
         # so the old configuration file still takes effect
@@ -104,6 +102,10 @@ configuration.
 Now, when you execute `sudo nixos-rebuild switch` to apply the configuration, the system
 should not change at all because we have simply switched to using Nix Flakes, and the
 configuration content remains consistent with before.
+
+> If your system's hostname is not `my-nixos`, you need to modify the name of
+> `nixosConfigurations` in `flake.nix`, or use `--flake /etc/nixos#my-nixos` to specify
+> the configuration name.
 
 After the switch, we can manage the system through the Flakes feature.
 
@@ -125,12 +127,10 @@ Currently, our flake includes these files:
 Up to this point, we have merely added a very simple configuration file,
 `/etc/nixos/flake.nix`, which has merely been a thin wrapper around
 `/etc/nixos/configuration.nix`, offering no new functionality and introducing no
-disruptive changes. 
+disruptive changes.
 
 In the content of the book that follows, we will learn about the structure and
-functionality of `flake.nix` and gradually see the benefits that such a wrapper can
-bring.
-
+functionality of `flake.nix` and gradually see the benefits that such a wrapper can bring.
 
 > Note: The configuration management method described in this book is NOT "Everything in a
 > single file". It is recommended to categorize configuration content into different nix
@@ -144,14 +144,4 @@ bring.
 > [Other Useful Tips - Managing NixOS Configuration with Git](./other-useful-tips.md) will
 > introduce several best practices for managing NixOS configuration with Git.
 
-[nix flake - Nix Manual]:
-  https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake#flake-inputs
-[nixpkgs/flake.nix]: https://github.com/NixOS/nixpkgs/tree/nixos-24.11/flake.nix
-[nixpkgs/nixos/lib/eval-config.nix]:
-  https://github.com/NixOS/nixpkgs/tree/nixos-24.11/nixos/lib/eval-config.nix
-[Module System - Nixpkgs]:
-  https://github.com/NixOS/nixpkgs/blob/24.11/doc/module-system/module-system.chapter.md
-[nixpkgs/nixos-24.11/lib/modules.nix - _module.args]:
-  https://github.com/NixOS/nixpkgs/blob/nixos-24.11/lib/modules.nix#L122-L184
-[nixpkgs/nixos-24.11/nixos/doc/manual/development/option-types.section.md#L237-L244]:
-  https://github.com/NixOS/nixpkgs/blob/nixos-24.11/nixos/doc/manual/development/option-types.section.md?plain=1#L237-L244
+

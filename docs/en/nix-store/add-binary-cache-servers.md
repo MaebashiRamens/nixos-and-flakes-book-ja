@@ -37,9 +37,9 @@ In Nix, you can configure cache servers using the following options:
       the build process of a certain library, they must take on the corresponding security
       risks and decide whether to add the public key of that cache server to
       `trusted-public-keys`. To completely solve this trust issue, Nix has introduced the
-      experimental feature [ca-derivations](https://wiki.nixos.org/wiki/Ca-derivations), which
-      does not depend on `trusted-public-keys` for signature verification. Interested
-      users can explore it further.
+      experimental feature [ca-derivations](https://wiki.nixos.org/wiki/Ca-derivations),
+      which does not depend on `trusted-public-keys` for signature verification.
+      Interested users can explore it further.
 
 You can configure the `substituters` and `trusted-public-keys` parameters in the following
 ways:
@@ -113,7 +113,7 @@ The second method is to configure `substituters` and `trusted-public-keys` using
 > As mentioned earlier, it is essential to configure `nix.settings.trusted-users` in this
 > configuration. Otherwise, the `substituters` we set here will not take effect.
 
-```nix{5-23,43-47}
+```nix{5-23,42-46}
 {
   description = "NixOS configuration of Ryan Yin";
 
@@ -139,7 +139,7 @@ The second method is to configure `substituters` and `trusted-public-keys` using
   };
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
 
     # omitting several configurations...
   };
@@ -151,7 +151,6 @@ The second method is to configure `substituters` and `trusted-public-keys` using
   }: {
     nixosConfigurations = {
       my-nixos = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
         modules = [
           ./hardware-configuration.nix
           ./configuration.nix
@@ -207,7 +206,7 @@ the value of `extra-xxx` will be appended to the end of the `xxx` parameter:
 
 In other words, you can use it like this:
 
-```nix{7,13,37-60}
+```nix{7,13,36-58}
 {
   description = "NixOS configuration of Ryan Yin";
 
@@ -227,7 +226,7 @@ In other words, you can use it like this:
   };
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
 
     # omitting several configurations...
   };
@@ -239,7 +238,6 @@ In other words, you can use it like this:
   }: {
     nixosConfigurations = {
       my-nixos = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
         modules = [
           ./hardware-configuration.nix
           ./configuration.nix
@@ -266,7 +264,6 @@ In other words, you can use it like this:
                 "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
               ];
             };
-
           }
           # omitting several configurations...
        ];
@@ -294,8 +291,8 @@ If you only need to use a proxy temporarily, you can set the proxy environment v
 with the following commands:
 
 ```bash
-sudo mkdir /run/systemd/system/nix-daemon.service.d/
-cat << EOF >/run/systemd/system/nix-daemon.service.d/override.conf
+sudo mkdir -p /run/systemd/system/nix-daemon.service.d/
+sudo tee /run/systemd/system/nix-daemon.service.d/override.conf <<EOF
 [Service]
 Environment="https_proxy=socks5h://localhost:7891"
 EOF

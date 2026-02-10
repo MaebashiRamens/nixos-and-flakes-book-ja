@@ -8,7 +8,7 @@ modify the package version, you need to lock the git commit of the flake input.
 Here's an example of how you can add multiple nixpkgs inputs, each using a different git
 commit or branch:
 
-```nix{8-13,19-20,27-44}
+```nix{8-13,19-20,27-42}
 {
   description = "NixOS configuration of Ryan Yin";
 
@@ -17,8 +17,8 @@ commit or branch:
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     # Latest stable branch of nixpkgs, used for version rollback
-    # The current latest version is 24.11
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.11";
+    # The current latest version is 25.11
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
 
     # You can also use a specific git commit hash to lock the version
     nixpkgs-fd40cef8d.url = "github:nixos/nixpkgs/fd40cef8d797670e203a27a91e4b8e6decf0b90c";
@@ -32,17 +32,15 @@ commit or branch:
     ...
   }: {
     nixosConfigurations = {
-      my-nixos = nixpkgs.lib.nixosSystem rec {
-        system = "x86_64-linux";
-
+      my-nixos = nixpkgs.lib.nixosSystem {
         # The `specialArgs` parameter passes the
         # non-default nixpkgs instances to other nix modules
-        specialArgs = {
+        specialArgs = let
+          system = "x86_64-linux";
+        in {
           # To use packages from nixpkgs-stable,
           # we configure some parameters for it first
           pkgs-stable = import nixpkgs-stable {
-            # Refer to the `system` parameter from
-            # the outer scope recursively
             inherit system;
             # To use Chrome, we need to allow the
             # installation of non-free software.
@@ -64,6 +62,13 @@ commit or branch:
   };
 }
 ```
+
+> **NOTE**: When using `import nixpkgs { ... }` you must supply either `system` or
+> `localSystem` to specify the target architecture; this differs from defining a NixOS
+> configuration with `nixpkgs.lib.nixosSystem`.  
+> The latter already has `nixpkgs.hostPlatform` set in the generated
+> `hardware-configuration.nix`, whereas a fresh `import nixpkgs { ... }` creates a new
+> instance that does not inherit that value.
 
 In the above example, we have defined multiple nixpkgs inputs: `nixpkgs`,
 `nixpkgs-stable`, and `nixpkgs-fd40cef8d`. Each input corresponds to a different git
@@ -104,7 +109,12 @@ submodule. Here's an example of a Home Manager submodule:
 
 ## Pinning a package version with an overlay
 
-The above approach is perfect for application packages, but sometimes you need to replace libraries used by those packages. This is where [Overlays](../nixpkgs/overlays.md) shine! Overlays can edit or replace any attribute of a package, but for now we'll just pin a package to a different nixpkgs version. The main disadvantage of editing a dependency with an overlay is that your Nix installation will recompile all installed packages that depend on it, but your situation may require it for specific bug fixes.
+The above approach is perfect for application packages, but sometimes you need to replace
+libraries used by those packages. This is where [Overlays](../nixpkgs/overlays.md) shine!
+Overlays can edit or replace any attribute of a package, but for now we'll just pin a
+package to a different nixpkgs version. The main disadvantage of editing a dependency with
+an overlay is that your Nix installation will recompile all installed packages that depend
+on it, but your situation may require it for specific bug fixes.
 
 ```nix
 # overlays/mesa.nix

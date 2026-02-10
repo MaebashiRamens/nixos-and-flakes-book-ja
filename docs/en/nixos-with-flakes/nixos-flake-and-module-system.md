@@ -9,10 +9,14 @@
 You might be wondering why the `/etc/nixos/configuration.nix` configuration file adheres
 to the Nixpkgs Module definition and can be referenced directly within the `flake.nix`.
 
-This is because the Nixpkgs repository contains a significant amount of NixOS
-implementation source code, primarily written in Nix. To manage and maintain such a large
-volume of Nix code and to allow users to customize various functions of their NixOS
-systems, a modular system for Nix code is essential.
+To understand this, we need to first learn about the origin of the Nixpkgs module system
+and its purpose.
+
+All the implementation code of NixOS is stored in the
+[Nixpkgs/nixos](https://github.com/NixOS/nixpkgs/tree/master/nixos) directory, and most of
+these source codes are written in the Nix language. To write and maintain such a large
+amount of Nix code, and to allow users to flexibly customize various functions of their
+NixOS system, a modular system for Nix code is essential.
 
 This modular system for Nix code is also implemented within the Nixpkgs repository and is
 primarily used for modularizing NixOS system configurations. However, it is also widely
@@ -50,13 +54,13 @@ automatically injected, and declaration-free parameters** provided by the module
 3. `options`: A set of all options defined in all Modules in the current environment.
 4. `pkgs`: A collection containing all nixpkgs packages, along with several related
    utility functions.
-   - At the beginner stage, you can consider its default value to be
-     `nixpkgs.legacyPackages."${system}"`, and the value of `pkgs` can be customized
-     through the `nixpkgs.pkgs` option.
+   - At the beginner stage, you can think of its default as
+     `nixpkgs.legacyPackages.<system>` — where `<system>` is your machine’s architecture
+     (e.g. `x86_64-linux`), and the value of `pkgs` can be customized through the
+     `nixpkgs.pkgs` option.
 5. `modulesPath`: A parameter available only in NixOS, which is a path pointing to
-   [nixpkgs/nixos/modules](https://github.com/NixOS/nixpkgs/tree/nixos-24.11/nixos/modules).
-   - It is defined in
-     [nixpkgs/nixos/lib/eval-config-minimal.nix#L43](https://github.com/NixOS/nixpkgs/blob/nixos-24.11/nixos/lib/eval-config-minimal.nix#L43).
+   [nixpkgs/nixos/modules](https://github.com/NixOS/nixpkgs/tree/nixos-25.11/nixos/modules).
+   - It is defined in [nixpkgs - modulesPath].
    - It is typically used to import additional NixOS modules and can be found in most
      NixOS auto-generated `hardware-configuration.nix` files.
 
@@ -77,11 +81,11 @@ to understand. If readers are interested, I will include the links here:
    Nixpkgs Manual.
    - Nixpkgs Manual: [Module System - Nixpkgs]
    - NixOS Manual:
-     [nixpkgs/nixos-24.11/nixos/doc/manual/development/option-types.section.md#L237-L244]
+     [nixos manual - specialArgs]
 1. `_module.args`:
    - NixOS Manual:
      [Appendix A. Configuration Options](https://nixos.org/manual/nixos/stable/options#opt-_module.args)
-   - Source Code: [nixpkgs/nixos-24.11/lib/modules.nix - _module.args]
+   - Source Code: [nixpkgs/nixos-25.11/lib/modules.nix - _module.args]
 
 In short, `specialArgs` and `_module.args` both require an attribute set as their value,
 and they serve the same purpose, passing all parameters in the attribute set to all
@@ -95,24 +99,22 @@ submodules. The difference between them is:
    passed through `_module.args` in `imports = [ ... ];`, it will result in an
    `infinite recursion` error**. In this case, you must use `specialArgs` instead.
 
-I personally prefer `specialArgs` because it is more straightforward and easier to use, and
-the naming style of `_xxx` makes it feel like an internal thing that is not suitable for use
-in user configuration files.
+I personally prefer `specialArgs` because it is more straightforward and easier to use,
+and the naming style of `_xxx` makes it feel like an internal thing that is not suitable
+for use in user configuration files.
 
 Suppose you want to pass a certain dependency to a submodule for use. You can use the
 `specialArgs` parameter to pass the `inputs` to all submodules:
 
-```nix{13}
+```nix{11}
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     another-input.url = "github:username/repo-name/branch-name";
   };
 
   outputs = inputs@{ self, nixpkgs, another-input, ... }: {
     nixosConfigurations.my-nixos = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-
       # Set all inputs parameters as special arguments for all submodules,
       # so you can directly use all dependencies in inputs in submodules
       specialArgs = { inherit inputs; };
@@ -126,15 +128,14 @@ Suppose you want to pass a certain dependency to a submodule for use. You can us
 
 Or you can achieve the same effect using the `_module.args` option:
 
-```nix{14}
+```nix{13}
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     another-input.url = "github:username/repo-name/branch-name";
   };
   outputs = inputs@{ self, nixpkgs, another-input, ... }: {
     nixosConfigurations.my-nixos = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
       modules = [
         ./configuration.nix
         {
@@ -181,10 +182,10 @@ of Helix directly.
 
 First, add the helix input data source to `flake.nix`:
 
-```nix{6,12,18}
+```nix{6,11,17}
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
 
     # helix editor, use the master branch
     helix.url = "github:helix-editor/helix/master";
@@ -192,7 +193,6 @@ First, add the helix input data source to `flake.nix`:
 
   outputs = inputs@{ self, nixpkgs, ... }: {
     nixosConfigurations.my-nixos = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
       specialArgs = { inherit inputs; };
       modules = [
         ./configuration.nix
@@ -216,9 +216,8 @@ Next, you can reference this flake input data source in `configuration.nix`:
     git
     vim
     wget
-    curl
     # Here, the helix package is installed from the helix input data source
-    inputs.helix.packages."${pkgs.system}".helix
+    inputs.helix.packages."${pkgs.stdenv.hostPlatform.system}".helix
   ];
   # ...
 }
@@ -278,12 +277,13 @@ the following official/semi-official documents:
 
 [nix flake - Nix Manual]:
   https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake#flake-inputs
-[nixpkgs/flake.nix]: https://github.com/NixOS/nixpkgs/tree/nixos-24.11/flake.nix
+[nixpkgs/flake.nix]: https://github.com/NixOS/nixpkgs/tree/nixos-25.11/flake.nix
 [nixpkgs/nixos/lib/eval-config.nix]:
-  https://github.com/NixOS/nixpkgs/tree/nixos-24.11/nixos/lib/eval-config.nix
+  https://github.com/NixOS/nixpkgs/tree/nixos-25.11/nixos/lib/eval-config.nix
 [Module System - Nixpkgs]:
-  https://github.com/NixOS/nixpkgs/blob/24.11/doc/module-system/module-system.chapter.md
-[nixpkgs/nixos-24.11/lib/modules.nix - _module.args]:
-  https://github.com/NixOS/nixpkgs/blob/nixos-24.11/lib/modules.nix#L122-L184
-[nixpkgs/nixos-24.11/nixos/doc/manual/development/option-types.section.md#L237-L244]:
-  https://github.com/NixOS/nixpkgs/blob/nixos-24.11/nixos/doc/manual/development/option-types.section.md?plain=1#L237-L244
+  https://github.com/NixOS/nixpkgs/blob/nixos-25.11/doc/module-system/module-system.chapter.md
+[nixpkgs/nixos-25.11/lib/modules.nix - _module.args]:
+  https://github.com/NixOS/nixpkgs/blob/nixos-25.11/lib/modules.nix#L122-L184
+[nixos manual - specialArgs]:
+  https://github.com/NixOS/nixpkgs/blob/nixos-25.11/nixos/doc/manual/development/option-types.section.md?plain=1#L283-L290
+[nixpkgs - modulesPath]: https://github.com/NixOS/nixpkgs/blob/nixos-25.11/nixos/lib/eval-config-minimal.nix#L42

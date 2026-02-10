@@ -16,10 +16,13 @@ Here's an example of its contents:
   home.username = "ryan";
   home.homeDirectory = "/home/ryan";
 
-  # link the configuration file in current directory to the specified location in home directory
+  # Import files from the current configuration directory into the Nix store,
+  # and create symbolic links pointing to those store files in the Home directory.
+
   # home.file.".config/i3/wallpaper.jpg".source = ./wallpaper.jpg;
 
-  # link all files in `./scripts` to `~/.config/i3/scripts`
+  # Import the scripts directory into the Nix store,
+  # and recursively generate symbolic links in the Home directory pointing to the files in the store.
   # home.file.".config/i3/scripts" = {
   #   source = ./scripts;
   #   recursive = true;   # link recursively
@@ -164,10 +167,7 @@ Here's an example of its contents:
   # You can update home Manager without changing this value. See
   # the home Manager release notes for a list of state version
   # changes in each release.
-  home.stateVersion = "24.11";
-
-  # Let home Manager install and manage itself.
-  programs.home-manager.enable = true;
+  home.stateVersion = "25.11";
 }
 ```
 
@@ -186,10 +186,10 @@ After adjusting the parameters, the content of `/etc/nixos/flake.nix` is as foll
   description = "NixOS configuration";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     # home-manager, used for managing user configuration
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.11";
+      url = "github:nix-community/home-manager/release-25.11";
       # The `follows` keyword in inputs is used for inheritance.
       # Here, `inputs.nixpkgs` of home-manager is kept consistent with
       # the `inputs.nixpkgs` of the current flake,
@@ -202,7 +202,6 @@ After adjusting the parameters, the content of `/etc/nixos/flake.nix` is as foll
     nixosConfigurations = {
       # TODO please change the hostname to your own
       my-nixos = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
         modules = [
           ./configuration.nix
 
@@ -241,8 +240,8 @@ To find the options we can use in `home.nix`, referring to the following documen
 
 - [Home Manager - Appendix A. Configuration Options](https://nix-community.github.io/home-manager/options.xhtml):
   A list of all options, it is recommended to search for keywords in it.
-  - [Home Manager Option Search](https://mipmip.github.io/home-manager-option-search/) is
-    another option search tool with better UI.
+  - [Home Manager Option Search](https://home-manager-options.extranix.com/) is another
+    option search tool with better UI.
 - [home-manager](https://github.com/nix-community/home-manager): Some options are not
   listed in the official documentation, or the documentation is not clear enough, you can
   directly search and read the corresponding source code in this home-manager repo.

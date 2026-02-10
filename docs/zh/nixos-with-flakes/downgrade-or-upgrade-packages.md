@@ -1,17 +1,18 @@
 # 降级与升级软件包 {#rollback-package-version}
 
-在使用 Nix Flakes 后，目前大家用得比较多的都是 `nixos-unstable` 分支的 nixpkgs，有时候就会
-遇到一些 bug，比如我最近（2023/5/6）就遇到了
+在使用 Nix Flakes 后，目前大家用得比较多的都是 `nixos-unstable`
+分支的 nixpkgs，有时候就会遇到一些 bug，比如我最近（2023/5/6）就遇到了
 [chrome/vscode 闪退的问题](https://github.com/swaywm/sway/issues/7562)。
 
-这时候就需要退回到之前的版本，在 Nix Flakes 中，所有的包版本与 hash 值与其 input 数据源的
-git commit 是一一对应的关系，因此回退某个包的到历史版本，就需要锁定其 input 数据源的 git
+这时候就需要退回到之前的版本，在 Nix
+Flakes 中，所有的包版本与 hash 值与其 input 数据源的 git
+commit 是一一对应的关系，因此回退某个包的到历史版本，就需要锁定其 input 数据源的 git
 commit.
 
 为了实现上述需求，首先修改 `/etc/nixos/flake.nix`，示例内容如下（主要是利用 `specialArgs`
 参数）：
 
-```nix{8-13,19-20,27-44}
+```nix{8-13,19-20,26-42}
 {
   description = "NixOS configuration of Ryan Yin"
 
@@ -20,8 +21,8 @@ commit.
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     # 最新 stable 分支的 nixpkgs，用于回退个别软件包的版本
-    # 当前最新版本为 24.11
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.11";
+    # 当前最新版本为 25.11
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
 
     # 另外也可以使用 git commit hash 来锁定版本，这是最彻底的锁定方式
     nixpkgs-fd40cef8d.url = "github:nixos/nixpkgs/fd40cef8d797670e203a27a91e4b8e6decf0b90c";
@@ -35,16 +36,15 @@ commit.
     ...
   }: {
     nixosConfigurations = {
-      my-nixos = nixpkgs.lib.nixosSystem rec {
-        system = "x86_64-linux";
-
+      my-nixos = nixpkgs.lib.nixosSystem {
         # 核心参数是这个，将非默认的 nixpkgs 数据源传到其他 modules 中
-        specialArgs = {
+        specialArgs = let
+          system = "x86_64-linux";
+        in {
           # 注意每次 import 都会生成一个新的 nixpkgs 实例
           # 这里我们直接在 flake.nix 中创建实例， 再传递到其他子 modules 中使用
           # 这样能有效重用 nixpkgs 实例，避免 nixpkgs 实例泛滥。
           pkgs-stable = import nixpkgs-stable {
-            # 这里递归引用了外部的 system 属性
             inherit system;
             # 为了拉取 chrome 等软件包，
             # 这里我们需要允许安装非自由软件
@@ -66,6 +66,11 @@ commit.
   };
 }
 ```
+
+> **NOTE**：使用 `import nixpkgs { ... }` 时必须显式传入 `system` 或 `localSystem`
+> 来指定系统架构，这一点与用 `nixpkgs.lib.nixosSystem` 定义 NixOS 时不同。  
+> 原因在于后者通常已在 `hardware-configuration.nix` 中通过 `nixpkgs.hostPlatform`
+> 指定了平台，而直接 `import nixpkgs { ... }` 会创建一份全新的实例，并不会自动继承该值。
 
 然后在你对应的 module 中使用该数据源中的包，一个 Home Manager 的子模块示例：
 
@@ -101,10 +106,9 @@ commit.
 
 ## 使用 Overlay 锁定软件包版本
 
-上面介绍的方法非常适合用于普通的应用程序（Application），但有时候你可能会需要替换一些被这
-些应用程序依赖的库（Library）。这时候就需要用到 [Overlays](../nixpkgs/overlays.md) 了！我
-们可以通过 Overlay 来修改某个库的版本，这会导致 Nix 重新编译所有依赖于该库的软件包，但在锁
-定一些比较底层的库版本时，这是一个非常好的方法。
+上面介绍的方法非常适合用于普通的应用程序（Application），但有时候你可能会需要替换一些被这些应用程序依赖的库（Library）。这时候就需要用到
+[Overlays](../nixpkgs/overlays.md)
+了！我们可以通过 Overlay 来修改某个库的版本，这会导致 Nix 重新编译所有依赖于该库的软件包，但在锁定一些比较底层的库版本时，这是一个非常好的方法。
 
 示例如下：
 
@@ -124,11 +128,11 @@ commit.
 
 ## 部署新配置
 
-配置完成后，通过 `sudo nixos-rebuild switch` 部署即可将 firefox/chrome/vscode 三个软件包回
-退到 stable 分支的版本。
+配置完成后，通过 `sudo nixos-rebuild switch`
+部署即可将 firefox/chrome/vscode 三个软件包回退到 stable 分支的版本。
 
 > 根据 @fbewivpjsbsby 补充的文章
-> [1000 instances of nixpkgs](https://discourse.nixos.org/t/1000-instances-of-nixpkgs/17347)，
-> 在子模块或者子 flakes 中用 `import` 来定制 `nixpkgs` 不是一个好的习惯，因为每次 `import`
-> 都会重新求值并产生一个新的 nixpkgs 实例，在配置越来越多时会导致构建时间变长、内存占用变
-> 大。所以这里改为了在 `flake.nix` 中创建所有 nixpkgs 实例。
+> [1000 instances of nixpkgs](https://discourse.nixos.org/t/1000-instances-of-nixpkgs/17347)，在子模块或者子 flakes 中用
+> `import` 来定制 `nixpkgs` 不是一个好的习惯，因为每次 `import`
+> 都会重新求值并产生一个新的 nixpkgs 实例，在配置越来越多时会导致构建时间变长、内存占用变大。所以这里改为了在
+> `flake.nix` 中创建所有 nixpkgs 实例。

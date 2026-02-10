@@ -48,8 +48,8 @@ development environment, we need to use `pkgs.mkShell` and `nix develop`.
 We can create a development environment using `pkgs.mkShell { ... }` and open an
 interactive Bash shell of this development environment using `nix develop`.
 
-To see how `pkgs.mkShell` works, let's take a look at
-[its source code](https://github.com/NixOS/nixpkgs/blob/nixos-23.05/pkgs/build-support/mkshell/default.nix).
+To see how [`pkgs.mkShell`] works, let's take a look at
+its source code.
 
 ```nix
 { lib, stdenv, buildEnv }:
@@ -108,35 +108,32 @@ stdenv.mkDerivation ({
 and other parameters are customizable, and `shellHook` is a special parameter that will be
 executed when `nix develop` enters the environment.
 
-Here is a `flake.nix` that defines a development environment with Node.js 18 installed:
+Here is a `flake.nix` that defines a development environment with Node.js 24 installed:
 
 ```nix
 {
   description = "A Nix-flake-based Node.js development environment";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
   };
 
   outputs = { self , nixpkgs ,... }: let
     # system should match the system you are running on
-    # system = "x86_64-linux";
-    system = "x86_64-darwin";
+    system = "x86_64-linux";
   in {
     devShells."${system}".default = let
-      pkgs = import nixpkgs {
-        inherit system;
-      };
+      pkgs = import nixpkgs { inherit system; };
     in pkgs.mkShell {
-      # create an environment with nodejs_18, pnpm, and yarn
+      # create an environment with nodejs, pnpm, and yarn
       packages = with pkgs; [
-        nodejs_18
+        nodejs_24
         nodePackages.pnpm
-        (yarn.override { nodejs = nodejs_18; })
+        (yarn.override { nodejs = nodejs_24; })
       ];
 
       shellHook = ''
-        echo "node `${pkgs.nodejs}/bin/node --version`"
+        echo "node `node --version`"
       '';
     };
   };
@@ -159,29 +156,26 @@ Here is an example:
   description = "A Nix-flake-based Node.js development environment";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
   };
 
   outputs = { self , nixpkgs ,... }: let
     # system should match the system you are running on
-    # system = "x86_64-linux";
-    system = "x86_64-darwin";
+    system = "x86_64-linux";
   in {
     devShells."${system}".default = let
-      pkgs = import nixpkgs {
-        inherit system;
-      };
+      pkgs = import nixpkgs { inherit system; };
     in pkgs.mkShell {
-      # create an environment with nodejs_18, pnpm, and yarn
+      # create an environment with nodejs_24, pnpm, and yarn
       packages = with pkgs; [
-        nodejs_18
+        nodejs_24
         nodePackages.pnpm
-        (yarn.override { nodejs = nodejs_18; })
+        (yarn.override { nodejs = nodejs_24; })
         nushell
       ];
 
       shellHook = ''
-        echo "node `${pkgs.nodejs}/bin/node --version`"
+        echo "node `node --version`"
         exec nu
       '';
     };
@@ -210,20 +204,17 @@ Example:
   description = "A Nix-flake-based Node.js development environment";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
   };
 
   outputs = { self , nixpkgs ,... }: let
     # system should match the system you are running on
-    # system = "x86_64-linux";
-    system = "x86_64-darwin";
+    system = "x86_64-linux";
   in {
     packages."${system}".dev = let
-      pkgs = import nixpkgs {
-        inherit system;
-      };
+      pkgs = import nixpkgs { inherit system; };
       packages = with pkgs; [
-          nodejs_20
+          nodejs_22
           nodePackages.pnpm
           nushell
       ];
@@ -243,7 +234,7 @@ Example:
 
 Then execute `nix run .#dev` or `nix shell .#dev --command 'dev-shell'`, you will enter a
 nushell session, where you can use the `node` `pnpm` command normally, and the node
-version is 20.
+version is 22.
 
 The wrapper generated in this way is an executable file, which does not actually depend on
 the `nix run` or `nix shell` command.
@@ -258,7 +249,7 @@ For example, we can directly install this wrapper through NixOS's
     # Install the wrapper into the system
     (let
       packages = with pkgs; [
-          nodejs_20
+          nodejs_22
           nodePackages.pnpm
           nushell
       ];
@@ -283,8 +274,8 @@ the `dev-shell` command, which is the special feature of `pkgs.runCommand` compa
 
 Related source code:
 
-- [pkgs/build-support/trivial-builders/default.nix - runCommand](https://github.com/NixOS/nixpkgs/blob/nixos-24.11/pkgs/build-support/trivial-builders/default.nix#L21-L49)
-- [pkgs/build-support/setup-hooks/make-wrapper.sh](https://github.com/NixOS/nixpkgs/blob/nixos-24.11/pkgs/build-support/setup-hooks/make-wrapper.sh)
+- [pkgs/build-support/trivial-builders/default.nix - runCommand]
+- [pkgs/build-support/setup-hooks/make-wrapper.sh]
 
 ## Enter the build environment of any Nix package
 
@@ -488,3 +479,6 @@ documentation.
 - [Shell Scripts - NixOS Wiki](https://wiki.nixos.org/wiki/Shell_Scripts)
 
 [New Nix Commands]: https://nixos.org/manual/nix/stable/command-ref/new-cli/nix.html
+[pkgs/build-support/trivial-builders/default.nix - runCommand]: https://github.com/NixOS/nixpkgs/blob/nixos-25.11/pkgs/build-support/trivial-builders/default.nix#L25-L54
+[pkgs/build-support/setup-hooks/make-wrapper.sh]: https://github.com/NixOS/nixpkgs/blob/nixos-25.11/pkgs/build-support/setup-hooks/make-wrapper.sh
+[`pkgs.mkShell`]: https://github.com/NixOS/nixpkgs/blob/nixos-25.11/pkgs/build-support/mkshell/default.nix

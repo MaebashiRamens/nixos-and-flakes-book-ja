@@ -12,8 +12,8 @@ dependencies of this flake. These dependencies will be passed as arguments to th
 ```nix{2-5,7}
 {
   inputs = {
-    # NixOS official package source, using the nixos-24.11 branch here
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    # NixOS official package source, using the nixos-25.11 branch here
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
   };
 
   outputs = { self, nixpkgs, ... }@inputs: {
@@ -40,19 +40,18 @@ Now let's look at `outputs`. It is a function that takes the dependencies from `
 its parameters, and its return value is an attribute set, which represents the build
 results of the flake:
 
-```nix{11-19}
+```nix{9-16}
 {
   description = "A simple NixOS flake";
 
   inputs = {
-    # NixOS official package source, here using the nixos-24.11 branch
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    # NixOS official package source, here using the nixos-25.11 branch
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
   };
 
   outputs = { self, nixpkgs, ... }@inputs: {
     # The host with the hostname `my-nixos` will use this configuration
     nixosConfigurations.my-nixos = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
       modules = [
         ./configuration.nix
       ];
@@ -141,13 +140,13 @@ definition includes the `lib` attribute, and in our example, we use the `lib` at
 ```nix{8-13}
 {
   inputs = {
-    # NixOS official package source, here using the nixos-24.11 branch
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    # NixOS official package source, here using the nixos-25.11 branch
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
   };
 
   outputs = { self, nixpkgs, ... }@inputs: {
     nixosConfigurations.my-nixos = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
+      # system = "x86_64-linux";
       modules = [
         ./configuration.nix
       ];
@@ -156,13 +155,16 @@ definition includes the `lib` attribute, and in our example, we use the `lib` at
 }
 ```
 
-The attribute set following `nixpkgs.lib.nixosSystem` is the function's parameter. We have
-only set two parameters here:
+The attribute set following `nixpkgs.lib.nixosSystem` is the function’s single argument,
+holding all configuration parameters; here we provide only two:
 
-1. `system`: This is straightforward, it's the system architecture parameter.
-2. `modules`: This is a list of modules, where the actual NixOS system configuration is
-   defined. The `/etc/nixos/configuration.nix` configuration file itself is a Nixpkgs
-   Module, so it can be directly added to the `modules` list for use.
+- `system`: A legacy alias for `nixpkgs.hostPlatform` that specifies the platform the
+  machine runs on.  
+  Because the generated `hardware-configuration.nix` (imported by `configuration.nix`)
+  already defines this value, you can usually omit it here.
+- `modules`: This is a list of modules, where the actual NixOS system configuration is
+  defined. The `/etc/nixos/configuration.nix` configuration file itself is a Nixpkgs
+  Module, so it can be directly added to the `modules` list for use.
 
 Understanding these basics is sufficient for beginners. Exploring the
 `nixpkgs.lib.nixosSystem` function in detail requires a grasp of the Nixpkgs module
@@ -173,14 +175,5 @@ source code, and study its implementation.
 
 [nix flake - Nix Manual]:
   https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake#flake-inputs
-[nixpkgs/flake.nix]: https://github.com/NixOS/nixpkgs/tree/nixos-24.11/flake.nix
-[nixpkgs/nixos/lib/eval-config.nix]:
-  https://github.com/NixOS/nixpkgs/tree/nixos-24.11/nixos/lib/eval-config.nix
-[Module System - Nixpkgs]:
-  https://github.com/NixOS/nixpkgs/blob/24.11/doc/module-system/module-system.chapter.md
-[nixpkgs/nixos-24.11/lib/modules.nix - _module.args]:
-  https://github.com/NixOS/nixpkgs/blob/nixos-24.11/lib/modules.nix#L122-L184
-[nixpkgs/nixos-24.11/nixos/doc/manual/development/option-types.section.md#L237-L244]:
-  https://github.com/NixOS/nixpkgs/blob/nixos-24.11/nixos/doc/manual/development/option-types.section.md?plain=1#L237-L244
-
+[nixpkgs/flake.nix]: https://github.com/NixOS/nixpkgs/tree/nixos-25.11/flake.nix
 

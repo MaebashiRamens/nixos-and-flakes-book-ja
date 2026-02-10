@@ -4,10 +4,10 @@ In our previous NixOS configurations, we set various values for `options` to con
 NixOS or Home Manager. These `options` are actually defined in two locations:
 
 - NixOS:
-  [nixpkgs/nixos/modules](https://github.com/NixOS/nixpkgs/tree/24.11/nixos/modules),
+  [nixpkgs/nixos/modules](https://github.com/NixOS/nixpkgs/tree/25.11/nixos/modules),
   where all NixOS options visible on <https://search.nixos.org/options> are defined.
 - Home Manager:
-  [home-manager/modules](https://github.com/nix-community/home-manager/blob/release-24.11/modules),
+  [home-manager/modules](https://github.com/nix-community/home-manager/blob/release-25.11/modules),
   where you can find all its options at
   <https://nix-community.github.io/home-manager/options.xhtml>.
 
@@ -54,7 +54,7 @@ repetition:
   boot.
 - Host A should change the Docker storage driver to `btrfs` while keeping other settings
   the same.
-- Hosts B and C, located in China, need to set a domestic mirror in Docker configuration.
+- Hosts B, located in China, need to set a domestic mirror in Docker configuration.
 - Host C, located in the United States, has no special requirements.
 - Host D, a desktop machine, needs to set an HTTP proxy to accelerate Docker downloads.
 
@@ -202,9 +202,10 @@ for `foo` by setting the `options` defined here. For example:
 ```
 
 In the example above, the way we assign values to `options` is actually a kind of
-**abbreviation**. When a module only contains `config` without any other declaration (like `option` and other
-special parameters of the module system), we can omit the `config` wrapping , just directly write the
-content of `config` to assign value to `option` section declared in other modules!
+**abbreviation**. When a module only contains `config` without any other declaration (like
+`option` and other special parameters of the module system), we can omit the `config`
+wrapping , just directly write the content of `config` to assign value to `option` section
+declared in other modules!
 
 ## Assignment and Lazy Evaluation in the Module System
 
@@ -217,12 +218,11 @@ Let's start with a simple example:
 # ./flake.nix
 {
   description = "NixOS Flake for Test";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
 
   outputs = {nixpkgs, ...}: {
     nixosConfigurations = {
       "test" = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
         modules = [
           ({config, lib, ...}: {
             options = {
@@ -258,7 +258,6 @@ an error: `error: infinite recursion encountered`.
 Let's explain each case:
 
 1. Example 1 evaluation flow: `config.warnings` => `config.foo` => `config`
-
    1. First, Nix attempts to compute the value of `config.warnings` but finds that it
       depends on `config.foo`.
    2. Next, Nix tries to compute the value of `config.foo`, which depends on its outer
@@ -270,7 +269,6 @@ Let's explain each case:
       `config.warnings`, and the computation ends.
 
 2. Example 2: `config` => `config.foo` => `config`
-
    1. Initially, Nix tries to compute the value of `config` but finds that it depends on
       `config.foo`.
    2. Next, Nix attempts to compute the value of `config.foo`, which depends on its outer
@@ -331,12 +329,11 @@ The first thought might be to directly use `imports` in `config = { ... };`, lik
 # ./flake.nix
 {
   description = "NixOS Flake for Test";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
 
   outputs = {nixpkgs, ...}: {
     nixosConfigurations = {
       "test" = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
         modules = [
           ({config, lib, ...}: {
             options = {
@@ -396,12 +393,11 @@ Let's look at an example directly:
 # ./flake.nix
 {
   description = "NixOS Flake for Test";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
 
   outputs = {nixpkgs, ...}: {
     nixosConfigurations = {
       "test" = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
         specialArgs = { enableFoo = true; };
         modules = [
           ({config, lib, enableFoo ? false, ...}: {
@@ -436,7 +432,7 @@ normal:
 One thing to note here is that **you cannot use parameters passed by `_module.args` in
 `imports =[ ... ];`**. We have already provided a detailed explanation in the previous
 section
-[Passing Non-default Parameters to Submodules](../nixos-with-flakes/nixos-with-flakes-enabled#pass-non-default-parameters-to-submodules).
+[Passing Non-default Parameters to Submodules](../nixos-with-flakes/nixos-flake-and-module-system#pass-non-default-parameters-to-submodules).
 
 ## References
 
@@ -446,14 +442,14 @@ section
 - [Module System - Nixpkgs]
 - [Writing NixOS Modules - Nixpkgs]
 
-[lib/modules.nix]: https://github.com/NixOS/nixpkgs/blob/24.11/lib/modules.nix#L995
+[lib/modules.nix]: https://github.com/NixOS/nixpkgs/blob/nixos-25.11/lib/modules.nix
 [Module System - Nixpkgs]:
-  https://github.com/NixOS/nixpkgs/blob/24.11/doc/module-system/module-system.chapter.md
+  https://github.com/NixOS/nixpkgs/blob/nixos-25.11/doc/module-system/module-system.chapter.md
 [Writing NixOS Modules - Nixpkgs]:
-  https://github.com/NixOS/nixpkgs/blob/nixos-24.11/nixos/doc/manual/development/writing-modules.chapter.md
+  https://github.com/NixOS/nixpkgs/blob/nixos-25.11/nixos/doc/manual/development/writing-modules.chapter.md
 [Option Definitions - NixOS]:
-  https://github.com/NixOS/nixpkgs/blob/nixos-24.11/nixos/doc/manual/development/option-def.section.md
+  https://github.com/NixOS/nixpkgs/blob/nixos-25.11/nixos/doc/manual/development/option-def.section.md
 [Option Declarations - NixOS]:
-  https://github.com/NixOS/nixpkgs/blob/nixos-24.11/nixos/doc/manual/development/option-declarations.section.md
+  https://github.com/NixOS/nixpkgs/blob/nixos-25.11/nixos/doc/manual/development/option-declarations.section.md
 [Options Types - NixOS]:
-  https://github.com/NixOS/nixpkgs/blob/nixos-24.11/nixos/doc/manual/development/option-types.section.md
+  https://github.com/NixOS/nixpkgs/blob/nixos-25.11/nixos/doc/manual/development/option-types.section.md

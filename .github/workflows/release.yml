@@ -1,17 +1,17 @@
-name: "Release PDF"
+name: "Release"
 on:
   push:
     tags:
       - "v*.*.*"
 
 jobs:
-  generate-pdf:
+  github-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Install nix
-        uses: cachix/install-nix-action@v23
+        uses: cachix/install-nix-action@v31
         with:
           nix_path: "nixpkgs=channel:nixpkgs-unstable"
           extra_nix_config: |
@@ -19,11 +19,22 @@ jobs:
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       - name: Show nixpkgs version
         run: nix-instantiate --eval -E '(import <nixpkgs> {}).lib.version'
-      - name: Run a command with nix develop
+
+      - name: Generate PDF
         run: |
           nix develop .#export-pdf --ignore-environment --command bash -c '
+            set -e
+            export NO_SANDBOX=true
             pnpm install
             pnpm export-pdf
+          '
+      - name: Generate EPUB
+        run: |
+          nix develop .#default --ignore-environment --command bash -c '
+            set -e
+            pnpm install
+            pnpm run export-epub -- --lang=en
+            pnpm run export-epub -- --lang=zh
           '
       # # For debugging, upload the pdfs as artifacts
       # - uses: actions/upload-artifact@v3
@@ -36,15 +47,17 @@ jobs:
           git fetch --tags
           PREVIOUS_TAG=$(git tag --sort=-creatordate | head -n 2 | tail -n 1)
           # Generate the changelog
-          git log --pretty=format:"%h %s" $PREVIOUS_TAG..HEAD > CHANGELOG
+          git log --pretty=format:"%h %s" "$PREVIOUS_TAG"..HEAD > CHANGELOG
 
           echo "Changelog from $PREVIOUS_TAG to HEAD:"
           cat CHANGELOG
-      - name: Release PDF
-        uses: softprops/action-gh-release@v1
+      - name: Release
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           generate_release_notes: true
           body_path: CHANGELOG
           files: |
             nixos-and-flakes-book.pdf
+            nixos-and-flakes-book.en.epub
+            nixos-and-flakes-book.zh.epub

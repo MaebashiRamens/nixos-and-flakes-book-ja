@@ -28,5 +28,9 @@ export default defineConfig({
       label: "简体中文",
       link: "https://nixos-and-flakes.thiscute.world/zh/",
     },
+    pt: {
+      label: "Português",
+      link: "https://nixos-and-flakes.ieda.me/",
+    },
   },
 })
