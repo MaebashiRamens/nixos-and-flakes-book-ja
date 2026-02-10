@@ -49,7 +49,7 @@ We can create a development environment using `pkgs.mkShell { ... }` and open an
 interactive Bash shell of this development environment using `nix develop`.
 
 To see how `pkgs.mkShell` works, let's take a look at
-[its source code](https://github.com/NixOS/nixpkgs/blob/nixos-23.05/pkgs/build-support/mkshell/default.nix).
+[its source code](https://github.com/NixOS/nixpkgs/blob/nixos-25.11/pkgs/build-support/mkshell/default.nix).
 
 ```nix
 { lib, stdenv, buildEnv }:
@@ -115,7 +115,7 @@ Here is a `flake.nix` that defines a development environment with Node.js 18 ins
   description = "A Nix-flake-based Node.js development environment";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
   };
 
   outputs = { self , nixpkgs ,... }: let
@@ -159,7 +159,7 @@ Here is an example:
   description = "A Nix-flake-based Node.js development environment";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
   };
 
   outputs = { self , nixpkgs ,... }: let
@@ -210,7 +210,7 @@ Example:
   description = "A Nix-flake-based Node.js development environment";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
   };
 
   outputs = { self , nixpkgs ,... }: let
@@ -283,8 +283,8 @@ the `dev-shell` command, which is the special feature of `pkgs.runCommand` compa
 
 Related source code:
 
-- [pkgs/build-support/trivial-builders/default.nix - runCommand](https://github.com/NixOS/nixpkgs/blob/nixos-24.11/pkgs/build-support/trivial-builders/default.nix#L21-L49)
-- [pkgs/build-support/setup-hooks/make-wrapper.sh](https://github.com/NixOS/nixpkgs/blob/nixos-24.11/pkgs/build-support/setup-hooks/make-wrapper.sh)
+- [pkgs/build-support/trivial-builders/default.nix - runCommand](https://github.com/NixOS/nixpkgs/blob/nixos-25.11/pkgs/build-support/trivial-builders/default.nix#L21-L49)
+- [pkgs/build-support/setup-hooks/make-wrapper.sh](https://github.com/NixOS/nixpkgs/blob/nixos-25.11/pkgs/build-support/setup-hooks/make-wrapper.sh)
 
 ## Enter the build environment of any Nix package
 

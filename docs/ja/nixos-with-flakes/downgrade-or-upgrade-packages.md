@@ -17,7 +17,7 @@ Flakesにおいては、パッケージのバージョンとハッシュ値は�
 
     # Latest stable branch of nixpkgs, used for version rollback
     # The current latest version is 24.11
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
 
     # You can also use a specific git commit hash to lock the version
     nixpkgs-fd40cef8d.url = "github:nixos/nixpkgs/fd40cef8d797670e203a27a91e4b8e6decf0b90c";

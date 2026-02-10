@@ -9,7 +9,7 @@ An example of kernel development with `flake.nix`.
   description = "NixOS running on LicheePi 4A";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11-small";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11-small";
 
     # custom kernel's source
     thead-kernel = {
@@ -81,7 +81,7 @@ An example of kernel development with `flake.nix`.
     in
       # the code here is mainly copied from:
       #   https://wiki.nixos.org/wiki/Linux_kernel#Embedded_Linux_Cross-compile_xconfig_and_menuconfig
-      (pkgs.buildFHSUserEnv {
+      (pkgs.buildFHSEnv {
         name = "kernel-build-env";
         targetPkgs = pkgs_: (with pkgs_;
           [
